@@ -10,7 +10,7 @@ Your job is to review it before it's merged.
 
 ## What to do
 
-Spend **2 hours at most**, including setup. We don't expect you to find or fix everything. We're more interested in what you prioritise and how clearly you explain it.
+Spend **2 to 3 hours**, including setup, and no more than 3. We don't expect you to find or fix everything. We're more interested in what you prioritise and how clearly you explain it.
 
 1. Read [SPEC.md](SPEC.md), then review the pull request. This shows exactly what it changed:
 
