@@ -40,6 +40,8 @@ You need Python 3.11 or newer, Node.js 20 or newer, and git. The project is on t
 
 ### Backend
 
+From the `taskboard` folder:
+
 ```bash
 cd backend
 python3 -m venv .venv            # Windows: python -m venv .venv
@@ -60,6 +62,8 @@ python manage.py runserver
 
 ### Frontend
 
+From the `taskboard` folder, in a new terminal:
+
 ```bash
 cd frontend
 npm install
@@ -78,7 +82,9 @@ The frontend's dev page uses sample data from `src/sampleData.ts`. It doesn't ca
    git bundle create ../taskboard-yourname.bundle --all
    ```
 
-3. Zip that `.bundle` file.
-4. In the TestGorilla assessment, paste your `REVIEW.md`, including "How you worked", and upload the zip.
+3. Zip that `.bundle` file. On macOS or Linux, from the folder above `taskboard`, run `zip taskboard-yourname.zip taskboard-yourname.bundle`. On Windows, right-click the file and choose **Compress to ZIP file** (or **Send to → Compressed (zipped) folder**).
+4. Reply to the email this exercise came with. Attach the zip, and paste your `REVIEW.md` into the reply, including "How you worked".
+
+Please keep the exercise and your solution private: don't publish them, for example in a public GitHub repository.
 
 After that, we'll set up a call of about 45 minutes to go through your review together.
