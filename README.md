@@ -12,15 +12,16 @@ Your job is to review it before it's merged.
 
 Spend **2 hours at most**, including setup. We don't expect you to find or fix everything. We're more interested in what you prioritise and how clearly you explain it.
 
-1. Set up the project and run the tests (see [Setup](#setup)).
-2. Read [SPEC.md](SPEC.md), then review the pull request. This shows exactly what it changed:
+1. Read [SPEC.md](SPEC.md), then review the pull request. This shows exactly what it changed:
 
    ```bash
    git diff main...weekly-summary
    ```
 
-3. Write your review in [REVIEW.md](REVIEW.md): the problems you find, most serious first.
-4. Fix the **three** problems you think matter most, on the `weekly-summary` branch. Give each fix a test that fails without it. Commit as you go.
+   You can find every problem by reading the code against the spec. Running the app is optional, though it can help you check a hunch.
+2. Write your review in [REVIEW.md](REVIEW.md): the problems you find, most serious first.
+3. Set up the project (see [Setup](#setup)). Then fix the **three** problems you think matter most, on the `weekly-summary` branch. Give each fix a test that fails without it, and commit as you go.
+4. Fill in "How you worked" at the end of [REVIEW.md](REVIEW.md).
 5. Submit your work (see [Submitting](#submitting)).
 
 **In scope:** everything the pull request changed, judged against the spec. Code that was already on `main` works as intended; read it to see how this codebase does things.
@@ -29,7 +30,7 @@ Spend **2 hours at most**, including setup. We don't expect you to find or fix e
 
 ## AI tools
 
-Using AI tools is up to you, and it doesn't change your score. If you use them, tell us how when you submit. In the follow-up call we'll talk through your review, so make sure you can explain everything in it.
+Using AI tools is up to you, and it doesn't change your score. If you use them, say so in "How you worked" at the end of [REVIEW.md](REVIEW.md): which tools, what you used them for, and what you checked or changed in what they gave you. In the follow-up call we'll talk through your review, so make sure you can explain everything in it.
 
 You don't need access to an LLM. The summary's model call goes through a fake client in `backend/tasks/llm.py`, which never calls a real model.
 
@@ -78,6 +79,6 @@ The frontend's dev page uses sample data from `src/sampleData.ts`. It doesn't ca
    ```
 
 3. Zip that `.bundle` file.
-4. In the TestGorilla assessment, paste your `REVIEW.md`, upload the zip, and tell us whether and how you used AI tools.
+4. In the TestGorilla assessment, paste your `REVIEW.md`, including "How you worked", and upload the zip.
 
 After that, we'll set up a call of about 45 minutes to go through your review together.
