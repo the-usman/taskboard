@@ -30,7 +30,7 @@ These models are already on `main`, in `backend/tasks/models.py`.
 6. **`due_count` and `done_percent`.** `due_count` is how many tasks have a `due_date` in the week. `done_percent` is the share of those tasks whose status is now `done`, as a whole number rounded half up: 5 of 8 is 62.5%, which shows as `63`. If no tasks are due in the week, `done_percent` is `null`.
 7. **`top_member`** is the `name` of the listed member with the highest `completed_count`. If two or more are tied, it's the one whose name comes first from A to Z. It's `null` if nobody completed anything. Our code works this out.
 8. **`highlight`** is one sentence written by the LLM, for example "Omar closed 3 tasks and the team finished most of what was due."
-   - Send the model the figures above, with members' first names only.
+   - Send the model the figures above and the members' names as they appear in `members`. Send nothing else about the members.
    - Use the model's reply as display text, and for nothing else.
    - The model is unreliable: it can fail, time out, or reply with something unusable. When that happens, still return the summary, with `highlight: null`.
 
