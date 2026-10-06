@@ -28,7 +28,7 @@ class FakeLLMClient:
         monkeypatch.setattr(FakeLLMClient, "error", LLMError("timed out"))
     """
 
-    reply = "This is a reply from the fake model."
+    reply = '{"highlight": "A steady week: the team kept things moving.", "top_member": "Sara"}'
     error = None
     prompts = []  # every prompt it was sent, so tests can check them
 
