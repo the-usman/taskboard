@@ -1,4 +1,3 @@
-import json
 from datetime import UTC, date, datetime, time, timedelta
 
 from .llm import get_llm_client
@@ -42,11 +41,13 @@ def build_weekly_summary(team, week_start: date) -> dict:
         "done_percent": round(done_count / due_count * 100),
         "members": members,
     }
-    summary.update(_highlight_and_top_member(team, summary))
+    top = members[0] if members else None
+    summary["top_member"] = top["name"] if top and top["completed_count"] > 0 else None
+    summary["highlight"] = _highlight(team, summary)
     return summary
 
 
-def _highlight_and_top_member(team, summary):
+def _highlight(team, summary):
     member_lines = "\n".join(
         f"- {row['name']}: {row['completed_count']} completed" for row in summary["members"]
     )
@@ -57,9 +58,12 @@ def _highlight_and_top_member(team, summary):
         f"Tasks completed: {summary['completed_count']}\n"
         f"Tasks due: {summary['due_count']} ({summary['done_percent']}% done)\n"
         f"Completed per member:\n{member_lines}\n\n"
-        'Reply with JSON only: {"highlight": "<one sentence>", '
-        '"top_member": "<name of the member who completed the most tasks>"}'
+        "Reply with the sentence only."
     )
-    # Asking for both in one call saves a second round trip to the model.
-    reply = json.loads(get_llm_client().complete(prompt))
-    return {"highlight": reply["highlight"], "top_member": reply["top_member"]}
+    try:
+        reply = get_llm_client().complete(prompt)
+    except Exception:
+        return None
+    if not isinstance(reply, str) or not reply.strip():
+        return None
+    return reply.strip()

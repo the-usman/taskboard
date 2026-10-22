@@ -1,9 +1,8 @@
-import json
 from datetime import UTC, date, datetime, timedelta
 
 import pytest
 
-from tasks.llm import FakeLLMClient
+from tasks.llm import FakeLLMClient, LLMError
 from tasks.models import Membership, Task
 
 URL = "/api/teams/{}/weekly-summary/"
@@ -23,8 +22,7 @@ def at(n, hour=12):
 
 @pytest.fixture
 def model_reply(monkeypatch):
-    def set_reply(highlight, top_member):
-        reply = json.dumps({"highlight": highlight, "top_member": top_member})
+    def set_reply(reply):
         monkeypatch.setattr(FakeLLMClient, "reply", reply)
 
     return set_reply
@@ -44,7 +42,7 @@ def test_member_sees_the_weekly_summary(client, team, add_member, make_task, mod
     make_task(team, assignee=lina, due_date=day(2), status=Task.Status.DOING)
     make_task(team, assignee=lina, due_date=day(4))
     make_task(team, assignee=sara, due_date=day(5))
-    model_reply("Omar closed 3 tasks this week.", "Omar")
+    model_reply("Omar closed 3 tasks this week.")
     client.force_login(sara)
 
     response = client.get(URL.format(team.id), {"week": "2026-10-05"})
@@ -69,7 +67,7 @@ def test_member_sees_the_weekly_summary(client, team, add_member, make_task, mod
 def test_the_model_is_sent_the_figures(client, team, add_member, make_task, model_reply):
     sara = add_member(team, "sara", "Sara")
     make_task(team, assignee=sara, due_date=day(2), status=DONE, completed_at=at(2))
-    model_reply("Sara cleared everything that was due.", "Sara")
+    model_reply("Sara cleared everything that was due.")
     client.force_login(sara)
 
     client.get(URL.format(team.id), {"week": "2026-10-05"})
@@ -85,7 +83,7 @@ def test_the_week_defaults_to_the_current_week(
 ):
     sara = add_member(team, "sara", "Sara")
     make_task(team, assignee=sara, due_date=day(2))
-    model_reply("A quiet week.", None)
+    model_reply("A quiet week.")
     monkeypatch.setattr("tasks.views.timezone.now", lambda: at(3, hour=9))
     client.force_login(sara)
 
@@ -99,7 +97,7 @@ def test_archived_tasks_do_not_count(client, team, add_member, make_task, model_
     sara = add_member(team, "sara", "Sara")
     make_task(team, assignee=sara, due_date=day(1))
     make_task(team, assignee=sara, due_date=day(2), status=DONE, completed_at=at(2), is_archived=True)
-    model_reply("A quiet week.", None)
+    model_reply("A quiet week.")
     client.force_login(sara)
 
     data = client.get(URL.format(team.id), {"week": "2026-10-05"}).json()
@@ -107,6 +105,61 @@ def test_archived_tasks_do_not_count(client, team, add_member, make_task, model_
     assert data["completed_count"] == 0
     assert data["due_count"] == 1
     assert data["done_percent"] == 0
+
+
+def test_a_tie_for_top_member_goes_to_the_name_first_from_a_to_z(
+    client, team, add_member, make_task, model_reply
+):
+    sara = add_member(team, "sara", "Sara")
+    lina = add_member(team, "lina", "Lina")
+    make_task(team, assignee=sara, due_date=day(1), status=DONE, completed_at=at(1))
+    make_task(team, assignee=lina, due_date=day(2), status=DONE, completed_at=at(2))
+    model_reply('{"highlight": "Sara led the week.", "top_member": "Sara"}')
+    client.force_login(sara)
+
+    data = client.get(URL.format(team.id), {"week": "2026-10-05"}).json()
+
+    assert data["top_member"] == "Lina"
+
+
+def test_top_member_is_null_when_nobody_completed_anything(
+    client, team, add_member, make_task, model_reply
+):
+    sara = add_member(team, "sara", "Sara")
+    make_task(team, assignee=sara, due_date=day(1))
+    model_reply("Sara was the star of the week.")
+    client.force_login(sara)
+
+    data = client.get(URL.format(team.id), {"week": "2026-10-05"}).json()
+
+    assert data["top_member"] is None
+
+
+def test_a_model_error_still_returns_the_summary(
+    client, team, add_member, make_task, monkeypatch
+):
+    sara = add_member(team, "sara", "Sara")
+    make_task(team, assignee=sara, due_date=day(1), status=DONE, completed_at=at(1))
+    monkeypatch.setattr(FakeLLMClient, "error", LLMError("timed out"))
+    client.force_login(sara)
+
+    response = client.get(URL.format(team.id), {"week": "2026-10-05"})
+
+    assert response.status_code == 200
+    assert response.json()["highlight"] is None
+    assert response.json()["top_member"] == "Sara"
+
+
+def test_an_empty_reply_gives_no_highlight(client, team, add_member, make_task, model_reply):
+    sara = add_member(team, "sara", "Sara")
+    make_task(team, assignee=sara, due_date=day(1))
+    model_reply("   ")
+    client.force_login(sara)
+
+    response = client.get(URL.format(team.id), {"week": "2026-10-05"})
+
+    assert response.status_code == 200
+    assert response.json()["highlight"] is None
 
 
 def test_people_outside_the_team_are_refused(client, team, make_user):
