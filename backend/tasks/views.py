@@ -2,12 +2,10 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
 from .access import get_team_for_member
-from .models import Membership, Team
 from .summary import build_weekly_summary
 from .utils import display_name
 
@@ -40,9 +38,7 @@ def task_list(request, team_id):
 @require_GET
 @login_required
 def weekly_summary(request, team_id):
-    team = get_object_or_404(Team, id=team_id)
-    if not Membership.objects.filter(team=team, user=request.user).exists():
-        return JsonResponse({"error": "You are not a member of this team."}, status=403)
+    team = get_team_for_member(request.user, team_id)
 
     week = request.GET.get("week")
     if week:

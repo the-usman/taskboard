@@ -4,7 +4,7 @@ from datetime import UTC, date, datetime, timedelta
 import pytest
 
 from tasks.llm import FakeLLMClient
-from tasks.models import Task
+from tasks.models import Membership, Task
 
 URL = "/api/teams/{}/weekly-summary/"
 MONDAY = date(2026, 10, 5)
@@ -114,7 +114,20 @@ def test_people_outside_the_team_are_refused(client, team, make_user):
 
     response = client.get(URL.format(team.id))
 
-    assert response.status_code == 403
+    assert response.status_code == 404
+
+
+@pytest.mark.parametrize("status", [Membership.Status.INVITED, Membership.Status.REMOVED])
+def test_invited_and_removed_members_get_404(client, team, add_member, status):
+    client.force_login(add_member(team, "former", status=status))
+
+    assert client.get(URL.format(team.id)).status_code == 404
+
+
+def test_a_team_that_does_not_exist_gets_404(client, make_user):
+    client.force_login(make_user("sara"))
+
+    assert client.get(URL.format(999)).status_code == 404
 
 
 def test_an_invalid_week_is_rejected(client, team, add_member):
