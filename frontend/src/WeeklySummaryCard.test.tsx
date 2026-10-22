@@ -25,4 +25,13 @@ describe("WeeklySummaryCard", () => {
     expect(screen.queryByText(/Top of the week/)).not.toBeInTheDocument();
     expect(screen.queryByText(/closed 3 tasks/)).not.toBeInTheDocument();
   });
+
+  it("shows the highlight as plain text, without rendering markup", () => {
+    const highlight = 'Omar closed <b>3</b> tasks <img src=x onerror="alert(1)">';
+    const { container } = render(<WeeklySummaryCard summary={{ ...sampleSummary, highlight }} />);
+
+    expect(screen.getByText(highlight, { exact: true })).toBeInTheDocument();
+    expect(container.querySelector("img")).toBeNull();
+    expect(container.querySelector("b")).toBeNull();
+  });
 });

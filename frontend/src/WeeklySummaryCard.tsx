@@ -18,10 +18,7 @@ export function WeeklySummaryCard({ summary }: { summary: WeeklySummary }) {
         Due this week: {summary.due_count} · Done: {summary.done_percent ?? 0}%
       </p>
       {summary.top_member && <p>Top of the week: {summary.top_member}</p>}
-      {summary.highlight && (
-        // The model wraps names in <b> tags, so render its markup.
-        <p className="highlight" dangerouslySetInnerHTML={{ __html: summary.highlight }} />
-      )}
+      {summary.highlight && <p className="highlight">{summary.highlight}</p>}
       <ol aria-label="Members">
         {summary.members.map((member) => (
           <li key={member.user_id}>
